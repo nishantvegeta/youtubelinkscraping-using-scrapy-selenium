@@ -12,16 +12,16 @@ class YoutubeTrendingSpider(scrapy.Spider):
     start_urls = ['https://www.youtube.com/feed/trending']
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(YoutubeTrendingSpider).__init__(*args, **kwargs)
         
         # MySQL database connection setup
-        self.db_conn = mysql.connector.connect(
+        self.conn = mysql.connector.connect(
             host='localhost',
             user='root',
             password='5744',
-            database='youtube_trending_db'
+            database='youtube_trendings_db'
         )
-        self.db_cursor = self.db_conn.cursor()
+        self.cursor = self.conn.cursor()
 
     def start_requests(self):
         yield SeleniumRequest(url=self.start_urls[0], callback=self.parse)
@@ -41,6 +41,7 @@ class YoutubeTrendingSpider(scrapy.Spider):
             if limited_links:
                 self.logger.info(f"Video links are --> {limited_links}")
                 for link in limited_links:
+                    self.save_to_db(link)
                     yield {'link':link}
             else:
                 self.logger.warning("No video links found.")
@@ -52,9 +53,9 @@ class YoutubeTrendingSpider(scrapy.Spider):
         """Save the video link to the MySQL database."""
         try:
             # SQL query to insert the video link into the `trending_new` table
-            insert_query = "INSERT INTO trending_new (link) VALUES (%s)"
-            self.db_cursor.execute(insert_query, (link,))
-            self.db_conn.commit()  # Commit the transaction
+            insert_query = "INSERT INTO trending_youtube (link) VALUES (%s)"
+            self.cursor.execute(insert_query, (link,))
+            self.conn.commit()  # Commit the transaction
             self.logger.info(f"Link saved to database: {link}")
         except mysql.connector.Error as err:
             self.logger.error(f"Error while saving to database: {err}")
@@ -62,6 +63,6 @@ class YoutubeTrendingSpider(scrapy.Spider):
     def close(self, reason):
         """Close the MySQL connection when the spider finishes."""
         if self.db_conn.is_connected():
-            self.db_cursor.close()
-            self.db_conn.close()
+            self.cursor.close()
+            self.conn.close()
             self.logger.info("MySQL connection closed.")
