@@ -1,4 +1,4 @@
-#!C:\Users\dell\Desktop\mainscrapyselenium\myenv\Scripts\python.exe
+#!C:\Users\dell\Desktop\intern\2\mainscrapyselenium\myenv\Scripts\python.exe
 
 import sys
 import json

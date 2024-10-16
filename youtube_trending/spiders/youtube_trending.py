@@ -62,7 +62,7 @@ class YoutubeTrendingSpider(scrapy.Spider):
 
     def close(self, reason):
         """Close the MySQL connection when the spider finishes."""
-        if self.db_conn.is_connected():
+        if self.conn.is_connected():
             self.cursor.close()
             self.conn.close()
             self.logger.info("MySQL connection closed.")
